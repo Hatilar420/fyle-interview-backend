@@ -100,3 +100,59 @@ def test_grade_assignment_draft_assignment(client, h_teacher_1):
     data = response.json
 
     assert data['error'] == 'FyleError'
+
+
+def test_grade_assignment(client, h_teacher_1):
+    """
+        A very simple test case to check if its working
+    """
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_teacher_1
+        , json={
+            "id": 1,
+            "grade": "B"
+        }
+    )
+
+    assert response.status_code == 200
+    data = response.json
+
+    assert data['data']['teacher_id'] == 1
+    assert data['data']['state'] == 'GRADED'
+    assert data['data']['grade'] == 'B'
+
+def test_no_Api_hit(client, h_teacher_1):
+    """
+        route does not exist
+    """
+    response = client.post(
+        '/teachers/assignments/grade',
+        headers=h_teacher_1
+        , json={
+            "id": 1,
+            "grade": "B"
+        }
+    )
+
+    assert response.status_code == 404
+    data = response.json
+    assert data['error'] == 'NotFound'
+
+def test_wrong_header_Api_hit(client, h_student_1):
+    """
+        Api hit with wrong header
+    """
+    response = client.post(
+        '/teacher/assignments/grade',
+        headers=h_student_1
+        , json={
+            "id": 1,
+            "grade": "B"
+        }
+    )
+
+    assert response.status_code == 403
+    data = response.json
+    assert data['error'] == 'FyleError'
+    assert data['message'] == 'requester should be a teacher'
